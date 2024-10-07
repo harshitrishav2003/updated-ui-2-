@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 const NavbarContainer = styled.nav`
-  background-color: #0D1F2D; 
+  background-color: #000; 
   color: #ffffff; 
   display: flex;
   align-items: left;

@@ -6,12 +6,20 @@ const BoxContainer = styled.div`
   margin-bottom: 20px;
   padding: 5px;
   background-color: #2c3e50;  
-`;
+  transition: background-color 0.3s, box-shadow 0.3s;
+
+  &:hover {
+    background-color: #1a2f40;  
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); 
+  }
+
+  `;
 
 const Title = styled.h3`
-  border-bottom: 2.3px solid red;  
-  padding-bottom: 8px;
+  border-bottom: 2px solid red;  
+  padding-bottom: 9px;
   color: white;  
+  text-align:center;
 `;
 
 const ListItem = styled.div`
@@ -37,7 +45,6 @@ const Flag = styled.img`
   margin-right: 10px;  
   vertical-align: middle;  
 `;
-
 
 const StatBox = ({ title, items }) => {
   return (
