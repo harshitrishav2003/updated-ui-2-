@@ -1,31 +1,53 @@
 import React, { useState } from 'react';
 import './App.css';
 import StatsPanel from './components/StatsPanel';
-import Navbar from './components/Navbar';  
+
+import Header from './components/Header';  
 import MapComponent from './components/MapComponent';
 import Sidebar from './components/Sidebar';  
 
 function App() {
-   
-  const [attackData, setAttackData] = useState([]);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);  // Sidebar open state
+  const [attackSpeed, setAttackSpeed] = useState(1500);       // Attack speed state
 
-  const handleUpdateAttacks = (count) => {
-   
-    const data = [/* attack data logic from your fetch call */];
-    setAttackData(data.slice(0, count));
+  // Toggle the sidebar open/close state
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  // Handle change in attack speed
+  const handleSpeedChange = (newSpeed) => {
+    setAttackSpeed(newSpeed);
+  };
+
+  // Handle attack updates (if needed)
+  const handleUpdateAttacks = (newCount) => {
+    console.log('Updated attack count to:', newCount);
   };
 
   return (
     <div className="App">
-      <div className="top-border"></div>
-      <Navbar />
+      <Header />   {/* Render the header */}
+      <div className="top-border"></div>  {/* Optional border styling */}
+
+    
+
       <div className="content">
-        <MapComponent attackData={attackData} />
+        {/* Map Component with sidebar and speed props */}
+        <MapComponent isSidebarOpen={isSidebarOpen} attackSpeed={attackSpeed} /> 
+
+        {/* Stats Panel with sidebar toggle functionality */}
+        <StatsPanel 
+          toggleSidebar={toggleSidebar} 
+          isSidebarOpen={isSidebarOpen} 
+        />
       </div>
-      <div className="stats-panel">
-        <StatsPanel />
-      </div>
-      <Sidebar handleUpdateAttacks={handleUpdateAttacks} />
+
+      {/* Sidebar with attack speed and update handlers */}
+      <Sidebar 
+        handleSpeedChange={handleSpeedChange} 
+        handleUpdateAttacks={handleUpdateAttacks} 
+      />
     </div>
   );
 }

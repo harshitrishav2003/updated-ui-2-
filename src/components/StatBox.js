@@ -5,18 +5,19 @@ const BoxContainer = styled.div`
   border: 2px solid #3478f6;  
   margin-bottom: 20px;
   padding: 5px;
-  background-color: #2c3e50;  
+  background-color: #000;  
   transition: background-color 0.3s, box-shadow 0.3s;
-
+  
   &:hover {
     background-color: #1a2f40;  
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); 
+    
   }
 
   `;
 
 const Title = styled.h3`
-  border-bottom: 2px solid red;  
+  border-bottom: 2.5px solid burlywood;  
   padding-bottom: 9px;
   color: white;  
   text-align:center;
@@ -25,7 +26,7 @@ const Title = styled.h3`
 const ListItem = styled.div`
   display: flex;
   align-items: center;
-  margin: 15px 0;
+  margin: 15px 1px;
   color: white;  
 `;
 
