@@ -68,45 +68,23 @@ const MapComponent = ({ isSidebarOpen, attackSpeed }) => {
         }).addTo(map);
       });
 
-    // Create SVG layer for D3 visualization
-    const svgLayer = d3.select(map.getPanes().overlayPane).append('svg');
-    svgLayerRef.current = svgLayer; // Store reference
-    const g = svgLayer.append('g').attr('class', 'leaflet-zoom-hide');
+      const svgLayer = d3.select(map.getPanes().overlayPane).append('svg'),
+      g = svgLayer.append('g').attr('class', 'leaflet-zoom-hide');
 
-    let attackData = [
-      { "id": 1, "source": [37.7749, -122.4194], "destination": [40.7128, -74.0060], "sourceName": "USA", "destinationName": "USA", "threatType": "malware" },
-      { "id": 2, "source": [51.5074, -0.1278], "destination": [48.8566, 2.3522], "sourceName": "UK", "destinationName": "France", "threatType": "phishing" },
-      { "id": 3, "source": [35.6895, 139.6917], "destination": [37.5665, 126.9780], "sourceName": "Japan", "destinationName": "South Korea", "threatType": "exploit" },
-      { "id": 4, "source": [-33.9249, 18.4241], "destination": [28.6139, 77.2090], "sourceName": "South Africa", "destinationName": "India", "threatType": "malware" },
-      { "id": 5, "source": [34.0522, -118.2437], "destination": [-33.8688, 151.2093], "sourceName": "USA", "destinationName": "Australia", "threatType": "phishing" },
-      { "id": 6, "source": [55.7558, 37.6176], "destination": [28.6139, 77.2090], "sourceName": "Russia", "destinationName": "India", "threatType": "exploit" },
-      { "id": 7, "source": [28.6139, 77.2090], "destination": [55.7558, 37.6176], "sourceName": "India", "destinationName": "Russia", "threatType": "malware" },
-      { "id": 8, "source": [37.7749, -122.4194], "destination": [55.7558, 37.6176], "sourceName": "USA", "destinationName": "Russia", "threatType": "phishing" },
-      { "id": 9, "source": [40.7128, -74.0060], "destination": [52.5200, 13.4050], "sourceName": "USA", "destinationName": "Germany", "threatType": "ransomware" },
-      { "id": 10, "source": [34.0522, -118.2437], "destination": [51.1657, 10.4515], "sourceName": "USA", "destinationName": "Germany", "threatType": "exploit" },
-      { "id": 11, "source": [55.7558, 37.6176], "destination": [41.9028, 12.4964], "sourceName": "Russia", "destinationName": "Italy", "threatType": "malware" },
-      { "id": 12, "source": [48.8566, 2.3522], "destination": [35.6895, 139.6917], "sourceName": "France", "destinationName": "Japan", "threatType": "phishing" },
-      { "id": 13, "source": [-34.6037, -58.3816], "destination": [40.4168, -3.7038], "sourceName": "Argentina", "destinationName": "Spain", "threatType": "exploit" },
-      { "id": 14, "source": [39.9042, 116.4074], "destination": [55.7558, 37.6176], "sourceName": "China", "destinationName": "Russia", "threatType": "malware" },
-      { "id": 15, "source": [37.7749, -122.4194], "destination": [34.0522, -118.2437], "sourceName": "USA", "destinationName": "USA", "threatType": "ransomware" },
-      { "id": 16, "source": [35.6895, 139.6917], "destination": [51.5074, -0.1278], "sourceName": "Japan", "destinationName": "UK", "threatType": "phishing" },
-      { "id": 17, "source": [48.8566, 2.3522], "destination": [28.6139, 77.2090], "sourceName": "France", "destinationName": "India", "threatType": "exploit" },
-      { "id": 18, "source": [55.7558, 37.6176], "destination": [40.7128, -74.0060], "sourceName": "Russia", "destinationName": "USA", "threatType": "malware" },
-      { "id": 19, "source": [37.7749, -122.4194], "destination": [-33.9249, 18.4241], "sourceName": "USA", "destinationName": "South Africa", "threatType": "phishing" },
-      { "id": 20, "source": [40.7128, -74.0060], "destination": [34.0522, -118.2437], "sourceName": "USA", "destinationName": "USA", "threatType": "exploit" },
-      { "id": 21, "source": [51.5074, -0.1278], "destination": [34.0522, -118.2437], "sourceName": "UK", "destinationName": "USA", "threatType": "ransomware" }
-    ];
-      let currentIndex = 0;
+    let currentIndex = 0;
 
     function projectPoint(latlng) {
       const point = map.latLngToLayerPoint(new L.LatLng(latlng[0], latlng[1]));
       return [point.x, point.y];
     }
 
-    function showNextAttack() {
-      if (currentIndex >= attackData.length) currentIndex = 0;
+    function showNextAttack(attackData) {
+      if (currentIndex >= attackData.length) {
+        currentIndex = 0;
+      }
 
-      const attack = attackData[currentIndex++];
+      const attack = attackData[currentIndex];
+      currentIndex++;
       const source = projectPoint(attack.source);
       const destination = projectPoint(attack.destination);
 
@@ -115,15 +93,47 @@ const MapComponent = ({ isSidebarOpen, attackSpeed }) => {
         (source[1] + destination[1]) / 2,
       ];
 
-      const lineColor = getLineColor(attack.threatType);
+      let lineColor;
+      switch (attack.threatType) {
+        case 'malware':
+          lineColor = 'red';
+          break;
+        case 'phishing':
+          lineColor = 'purple';
+          break;
+        case 'exploit':
+          lineColor = 'yellow';
+          break;
+        default:
+          lineColor = 'white';
+      }
 
       const lineGenerator = d3.line()
         .curve(d3.curveBundle.beta(1))
         .x((d) => d[0])
         .y((d) => d[1]);
 
-      // Create attack line animation
-      g.append('path')
+      function createGradient(id, color) {
+        const svgDefs = svgLayer.append('defs');
+
+        const radialGradient = svgDefs.append('radialGradient')
+          .attr('id', id)
+          .attr('cx', '50%')
+          .attr('cy', '50%')
+          .attr('r', '50%');
+
+        radialGradient.append('stop')
+          .attr('offset', '0%')
+          .attr('stop-color', color)
+          .attr('stop-opacity', 1);
+
+        radialGradient.append('stop')
+          .attr('offset', '100%')
+          .attr('stop-color', color)
+          .attr('stop-opacity', 0);
+      }
+
+      const path = g.append('path')
         .datum([source, midPoint, destination])
         .attr('class', 'attack-line')
         .attr('d', lineGenerator)
@@ -139,26 +149,64 @@ const MapComponent = ({ isSidebarOpen, attackSpeed }) => {
         .duration(attackSpeed)
         .ease(d3.easeLinear)
         .attr('stroke-dashoffset', 0)
+        .on('start', function () {
+          const gradientId = `fadeGradient-${currentIndex}`;
+          createGradient(gradientId, lineColor);
+
+          const sourceSpot = g.append('circle')
+            .attr('cx', source[0])
+            .attr('cy', source[1])
+            .attr('r', 5)
+            .attr('fill', `url(#${gradientId})`)
+            .attr('opacity', 0)
+            .transition()
+            .duration(1000)
+            .ease(d3.easeBounceOut)
+            .attr('r', 15)
+            .attr('opacity', 1)
+            .transition()
+            .duration(500)
+            .attr('r', 0)
+            .attr('opacity', 0)
+            .remove();
+        })
         .on('end', function () {
-          d3.select(this).remove();
-          showNextAttack();
+          const gradientId = `fadeGradient-${currentIndex}-end`;
+          createGradient(gradientId, lineColor);
+
+          const destinationSpot = g.append('circle')
+            .attr('cx', destination[0])
+            .attr('cy', destination[1])
+            .attr('r', 5)
+            .attr('fill', `url(#${gradientId})`)
+            .attr('opacity', 0)
+            .transition()
+            .duration(1000)
+            .ease(d3.easeBounceOut)
+            .attr('r', 15)
+            .attr('opacity', 1)
+            .transition()
+            .duration(500)
+            .attr('r', 0)
+            .attr('opacity', 0)
+            .remove();
+
+          d3.select(this)
+            .transition()
+            .duration(2000)
+            .ease(d3.easeLinear)
+            .attr('stroke-dashoffset', -this.getTotalLength())
+            .remove();
+
+          showNextAttack(attackData);
         });
 
-      // Display attack information
       const attackInfo = `${attack.sourceName} ➔ ${attack.destinationName} (${attack.threatType})`;
-      d3.select('#activeAttacksList').append('li').text(attackInfo).transition().duration(1000).remove();
+
+      d3.select('#activeAttacksList').append('li').text(attackInfo).transition().duration(attackSpeed).remove();
     }
 
-    function getLineColor(threatType) {
-      switch (threatType) {
-        case 'malware': return 'red';
-        case 'phishing': return 'purple';
-        case 'exploit': return 'yellow';
-        default: return 'white';
-      }
-    }
-
-    function reset() {
+    function reset(attackData) {
       const bounds = map.getBounds(),
         topLeft = map.latLngToLayerPoint(bounds.getNorthWest()),
         bottomRight = map.latLngToLayerPoint(bounds.getSouthEast());
@@ -171,14 +219,18 @@ const MapComponent = ({ isSidebarOpen, attackSpeed }) => {
 
       g.attr('transform', `translate(${-topLeft.x}, ${-topLeft.y})`);
 
-      showNextAttack();
+      showNextAttack(attackData);
     }
 
-    map.on('moveend', reset);
-    reset();
+    fetch('/attackData.json')
+      .then((response) => response.json())
+      .then((attackData) => {
+        map.on('moveend', () => reset(attackData));
+        reset(attackData);
+      });
 
     return () => {
-      map.off('moveend', reset);
+      map.off('moveend');
       map.remove();
     };
   }, [attackSpeed]);
